@@ -1,0 +1,38 @@
+option(build_model_loader_test "build model loader unitest" ON)
+option(build_model_param_test "build model param unitest" ON)
+option(build_frame_skip_test "build frame skip control unitest" ON)
+option(build_scaler_tiler_test "build scaler tiler unitest" ON)
+option(build_frame_control_test "build frame control unitest" ON)
+if(build_components_test)
+set(test_srcs "")
+list(APPEND test_srcs ${PROJECT_SOURCE_DIR}/components/unitest/test_components.cpp)
+
+if(build_model_loader_test)
+	file(GLOB_RECURSE test_model_loader_srcs ${PROJECT_SOURCE_DIR}/components/unitest/ModelLoader/*.cpp)
+	list(APPEND test_srcs ${test_model_loader_srcs})
+endif()
+
+if(build_model_param_test)
+	file(GLOB_RECURSE test_model_param_srcs ${PROJECT_SOURCE_DIR}/components/unitest/ModuleParam/*.cpp)
+	list(APPEND test_srcs ${test_model_param_srcs})
+endif()
+
+if(build_frame_skip_test)
+	file(GLOB_RECURSE test_frame_skip_srcs ${PROJECT_SOURCE_DIR}/components/unitest/FrameSkipControl/*.cpp)
+	list(APPEND test_srcs ${test_frame_skip_srcs})
+endif()
+
+if(build_scaler_tiler_test)
+	file(GLOB_RECURSE test_scaler_tiler_srcs ${PROJECT_SOURCE_DIR}/components/unitest/ScalerAndTiler/*.cpp)
+	list(APPEND test_srcs ${test_scaler_tiler_srcs})
+endif()
+
+if(build_frame_control_test)
+	file(GLOB_RECURSE test_frame_control_srcs ${PROJECT_SOURCE_DIR}/components/unitest/FrameControl/*.cpp)
+	list(APPEND test_srcs ${test_frame_control_srcs})
+endif()
+
+add_executable(components_test ${test_srcs})
+target_link_libraries(components_test easysa_components gtestd glogd ${CUDA_LIBRARIES} ${OpenCV_LIBS} nvinfer nvinfer_plugin nvonnxparser nvparsers)
+#add_test(cnstream_test ${EXECUTABLE_OUTPUT_PATH}/components_test)
+endif()
