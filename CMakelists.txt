@@ -1,0 +1,99 @@
+cmake_minimum_required (VERSION 3.9)
+project (easy_sa)
+
+#set(CMAKE_MAKE_PROGRAM "make")
+#set(CMAKE_C_COMPILER "gcc")
+#set(CMAKE_CXX_COMPILER "g++")
+#set(CC D:\\cygwin64\\bin\\gcc.exe)
+#set(CXX D:\\cygwin64\\bin\\g++.exe)
+#add_definitions(-std=c++11)
+
+if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
+    message( FATAL_ERROR "In-source builds not allowed. 
+            Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
+endif()
+
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/out/build/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out/build/bin)
+
+option(RELEASE "release" OFF)
+option(WITH_FFMPEG "with ffmpeg" ON)
+option(WITH_OPENCV "with opencv" ON)
+option(WITH_CUDA "with cuda" ON)
+option(build_source "build source module" ON)
+option(build_framework_test "build framework unitest" ON)
+option(build_components_test "build components unitest" ON)
+
+
+#if(RELEASE)
+#  set(CMAKE_BUILD_TYPE Release)
+#  set(CMAKE_CXX_FLAGS_RELEASE "-DNDBUG -O2")
+#else()
+#  set(CMAKE_BUILD_TYPE Debug)
+#  set(CMAKE_CXX_FLAGS_DEBUG "-DEBUG -g")
+#endif()
+
+#support CUDA
+if(WITH_CUDA)
+    find_package(CUDA REQUIRED)
+    message(STATUS "cuda include path is: " ${CUDA_INCLUDE_DIRS})
+    message(STATUS "cuda lib path is: " ${CUDA_LIBS})
+    include_directories(${CUDA_INCLUDE_DIRS})
+    link_directories(${CUDA_LIBS})
+endif()
+
+##FFmpeg
+
+if(WITH_FFMPEG)
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/ffmpeg/include)
+link_directories(${PROJECT_SOURCE_DIR}/3rdparty/ffmpeg/lib)
+set(FFmpeg_LIBS avformat avfilter avcodec avdevice avformat avutil swresample swscale)
+list(APPEND 3RDPARTY_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/3rdparty/ffmpeg/include)
+list(APPEND 3RDPARTY_LIBS ${FFmpeg_LIBS})
+endif()
+
+if(WITH_OPENCV)
+set(OpenCV_DIR ${PROJECT_SOURCE_DIR}/3rdparty/opencv/build)
+find_package(OpenCV REQUIRED)
+message(STATUS "opencv include path is: " ${OpenCV_INCLUDE_DIRS})
+message(STATUS "opencv lib path is: " ${OpenCV_LIBS})
+include_directories(${OpenCV_INCLUDE_DIRS})
+link_directories(${OpenCV_LIBS})
+list(APPEND 3RDPARTY_INCLUDE_DIRS ${OpenCV_INCLUDE_DIRS})
+list(APPEND 3RDPARTY_LIBS ${OpenCV_LIBS})
+endif()
+
+#glog
+include(${PROJECT_SOURCE_DIR}/3rdparty/glog/lib/cmake/glog/glog-config.cmake)
+find_package(Glog REQUIRED)
+include_directories(${GLOG_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/glog/include)
+link_directories(${PROJECT_SOURCE_DIR}/3rdparty/glog/lib)
+list(APPEND 3RDPARTY_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/3rdparty/glog/include)
+list(APPEND 3RDPARTY_LIBS glogd)
+
+#gtest
+include(${PROJECT_SOURCE_DIR}/3rdparty/googletest/lib/cmake/GTest/GTestConfig.cmake)
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/googletest/include)
+link_directories(${PROJECT_SOURCE_DIR}/3rdparty/googletest/lib)
+list(APPEND 3RDPARTY_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/3rdparty/googletest/include)
+list(APPEND 3RDPARTY_LIBS gtestd gmockd)
+
+#rapidjson
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/rapidjson/include)
+list(APPEND ${PROJECT_SOURCE_DIR}/3rdparty/rapidjson/include)
+
+#libyuv
+include_directories(${PROJECT_SOURCE_DIR}/3rdparty/libyuv/include)
+link_directories(${PROJECT_SOURCE_DIR}/3rdparty/libyuv/lib)
+list(APPEND 3RDPARTY_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/3rdparty/libyuv/include)
+set(YUV_LIBS yuv)
+list(APPEND 3RDPARTY_LIBS ${YUV_LIBS})
+
+set (EXTRA_LIBS ${EXTRA_LIBS} ${3RDPARTY_LIBS})
+add_subdirectory(3rdparty)
+#add_subdirectory(modules)
+add_subdirectory(sample)
+add_subdirectory(framework)
+add_subdirectory(components)
+add_subdirectory(plugins)
